@@ -69,20 +69,22 @@ exports.initiatePayment = async (req, res) => {
 exports.paymentCallback = (req, res) => {
     const data = req.body;
 
-    console.log("PAYHERO CALLBACK:", data);
+    console.log("🔥 CALLBACK RECEIVED:", JSON.stringify(data, null, 2));
 
-    const transactionId =
-        data.transaction_id ||
-        data.checkoutRequestId ||
-        data.MerchantRequestID;
+    const reference =
+        data.external_reference ||
+        data.Reference ||
+        data.transaction_id;
 
-    if (transactionId && payments[transactionId]) {
-        payments[transactionId].status = "paid";
+    if (reference && payments[reference]) {
+        payments[reference].status = "paid";
+        console.log("✅ PAYMENT UPDATED:", reference);
+    } else {
+        console.log("⚠️ No matching transaction found:", reference);
     }
 
-    res.json({ ResultCode: 0, ResultDesc: "OK" });
+    res.json({ success: true });
 };
-
 /**
  * CHECK STATUS
  */
