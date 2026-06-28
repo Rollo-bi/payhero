@@ -12,13 +12,14 @@ exports.initiatePayment = async (req, res) => {
         const response = await axios.post(
             `${process.env.PAYHERO_BASE_URL}`,
             {
-                phone,
-                amount,
-                channel: "mpesa",
-                channel_id: process.env.PAYHERO_CHANNEL_ID,
-                reference: plan,
-                account_reference: plan,
-                callback_url: `${process.env.BASE_URL}/api/payment/callback`
+                
+    PhoneNumber: phone,
+    Provider: "mpesa",
+    Amount: amount,
+    Reference: plan,
+    CallbackURL: `${process.env.BASE_URL}/api/payment/callback`
+
+              
             },
             {
                 headers: {
