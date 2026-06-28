@@ -22,7 +22,7 @@ exports.initiatePayment = async (req, res) => {
             },
             {
                 headers: {
-                    Authorization: `Bearer ${process.env.PAYHERO_API_KEY}`,
+                    Authorization: process.env.PAYHERO_API_KEY,
                     "Content-Type": "application/json"
                 }
             }
