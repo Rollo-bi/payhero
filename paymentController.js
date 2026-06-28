@@ -21,7 +21,7 @@ exports.initiatePayment = async (req, res) => {
             external_reference : "SUB-" + Date.now(), // unique reference
             Reference: plan,
             callback_url: "https://TALAkash.online/callback",
-            description: description || "Subscription Payment"
+            
 
               
             },
