@@ -10,18 +10,16 @@ exports.initiatePayment = async (req, res) => {
 
     try {
         const response = await axios.post(
-            `${process.env.PAYHERO_BASE_URL}`,
+            `${process.env.PAYHERO_BASE_URL}/stkpush`,
             {
                 phone,
-        amount,
-        channel: "mpesa",
-
-        // ✅ ADD THIS
-        channel_id: process.env.PAYHERO_CHANNEL_ID,
-
-        reference: plan,
-        account_reference: plan,
-        callback_url: `${process.env.BASE_URL}/api/payment/callback`   },
+                amount,
+                channel: "mpesa",
+                channel_id: process.env.PAYHERO_CHANNEL_ID,
+                reference: plan,
+                account_reference: plan,
+                callback_url: `${process.env.BASE_URL}/api/payment/callback`
+            },
             {
                 headers: {
                     Authorization: `Bearer ${process.env.PAYHERO_API_KEY}`,
@@ -30,8 +28,10 @@ exports.initiatePayment = async (req, res) => {
             }
         );
 
-        // IMPORTANT: PayHero usually returns a reference like checkoutRequestId
+        console.log("PAYHERO RESPONSE:", response.data);
+
         const transactionId =
+            response.data.transaction_id ||
             response.data.checkoutRequestId ||
             response.data.reference ||
             Date.now().toString();
@@ -50,13 +50,6 @@ exports.initiatePayment = async (req, res) => {
 
     } catch (error) {
         console.log("INIT ERROR:", error.response?.data || error.message);
-        console.log("FULL ERROR:", error.response?.data);
-console.log("STATUS:", error.response?.status);
-console.log("PAYLOAD:", {
-    phone,
-    amount,
-    plan
-});
 
         res.status(500).json({
             success: false,
@@ -66,7 +59,7 @@ console.log("PAYLOAD:", {
 };
 
 /**
- * CALLBACK FROM PAYHERO
+ * CALLBACK
  */
 exports.paymentCallback = (req, res) => {
     const data = req.body;
@@ -74,9 +67,9 @@ exports.paymentCallback = (req, res) => {
     console.log("PAYHERO CALLBACK:", data);
 
     const transactionId =
+        data.transaction_id ||
         data.checkoutRequestId ||
-        data.reference ||
-        data.transaction_id;
+        data.MerchantRequestID;
 
     if (transactionId && payments[transactionId]) {
         payments[transactionId].status = "paid";
@@ -86,7 +79,7 @@ exports.paymentCallback = (req, res) => {
 };
 
 /**
- * CHECK STATUS (ANDROID POLLING)
+ * CHECK STATUS
  */
 exports.checkStatus = (req, res) => {
     const id = req.params.id;
@@ -101,7 +94,8 @@ exports.checkStatus = (req, res) => {
     }
 
     res.json({
-         success: true,
-            transactionId
+        success: true,
+        status: payment.status,
+        plan: payment.plan
     });
 };
