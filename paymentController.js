@@ -13,11 +13,15 @@ exports.initiatePayment = async (req, res) => {
             `${process.env.PAYHERO_BASE_URL}`,
             {
                 
-    PhoneNumber: phone,
-    Provider: "mpesa",
-    Amount: amount,
-    Reference: plan,
-    CallbackURL: `${process.env.BASE_URL}/api/payment/callback`
+   
+            amount: Number(amount),
+            phone_number: phone,
+            channel_id: 4643,                       // your STK Push channel
+            provider: "m-pesa",
+            external_reference : "SUB-" + Date.now(), // unique reference
+            Reference: plan,
+            callback_url: "https://TALAkash.online/callback",
+            description: description || "Subscription Payment"
 
               
             },
