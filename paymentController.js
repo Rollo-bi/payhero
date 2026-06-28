@@ -20,8 +20,7 @@ exports.initiatePayment = async (req, res) => {
             provider: "m-pesa",
             external_reference : "SUB-" + Date.now(), // unique reference
             Reference: plan,
-            callback_url: "https://TALAkash.online/callback",
-            
+          callback_url: "https://payhero-p673.onrender.com/api/payment/callback"  
 
               
             },
