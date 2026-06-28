@@ -10,7 +10,7 @@ exports.initiatePayment = async (req, res) => {
 
     try {
         const response = await axios.post(
-            `${process.env.PAYHERO_BASE_URL}/payments/stkpush`,
+            `${process.env.PAYHERO_BASE_URL}`,
             {
                 phone,
         amount,
