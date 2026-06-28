@@ -10,14 +10,18 @@ exports.initiatePayment = async (req, res) => {
 
     try {
         const response = await axios.post(
-            `${process.env.PAYHERO_BASE_URL}`,
+            `${process.env.PAYHERO_BASE_URL}/payments/stkpush`,
             {
                 phone,
-                amount,
-                channel: "mpesa",
-                account_reference: plan,
-                callback_url: `${process.env.BASE_URL}/api/payment/callback`
-            },
+        amount,
+        channel: "mpesa",
+
+        // ✅ ADD THIS
+        channel_id: process.env.PAYHERO_CHANNEL_ID,
+
+        reference: plan,
+        account_reference: plan,
+        callback_url: `${process.env.BASE_URL}/api/payment/callback`   },
             {
                 headers: {
                     Authorization: `Bearer ${process.env.PAYHERO_API_KEY}`,
