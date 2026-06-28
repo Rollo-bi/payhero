@@ -5,7 +5,7 @@ const {
     initiatePayment,
     paymentCallback,
     checkStatus
-} = require("../controllers/paymentController");
+} = require("../paymentController");
 
 router.post("/initiate", initiatePayment);
 router.post("/callback", paymentCallback);
