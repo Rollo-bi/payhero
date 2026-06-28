@@ -1,33 +1,36 @@
 const axios = require("axios");
 
-// temporary storage (replace with DB later)
 let payments = {};
 
 /**
- * INITIATE PAYMENT (STK PUSH)
+ * INITIATE STK PUSH
  */
 exports.initiatePayment = async (req, res) => {
-
     const { phone, amount, plan } = req.body;
 
     try {
-        // Call PayHero API (example format - adjust to real PayHero docs)
         const response = await axios.post(
-            `${process.env.PAYHERO_BASE_URL}/payments/initiate`,
+            `${process.env.PAYHERO_BASE_URL}/payments/stkpush`,
             {
                 phone,
                 amount,
                 channel: "mpesa",
-                reference: plan
+                account_reference: plan,
+                callback_url: `${process.env.BASE_URL}/api/payment/callback`
             },
             {
                 headers: {
-                    Authorization: `Bearer ${process.env.PAYHERO_API_KEY}`
+                    Authorization: `Bearer ${process.env.PAYHERO_API_KEY}`,
+                    "Content-Type": "application/json"
                 }
             }
         );
 
-        const transactionId = response.data.transaction_id || Date.now().toString();
+        // IMPORTANT: PayHero usually returns a reference like checkoutRequestId
+        const transactionId =
+            response.data.checkoutRequestId ||
+            response.data.reference ||
+            Date.now().toString();
 
         payments[transactionId] = {
             phone,
@@ -42,40 +45,39 @@ exports.initiatePayment = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error.message);
+        console.log("INIT ERROR:", error.response?.data || error.message);
 
         res.status(500).json({
             success: false,
-            message: "Payment initiation failed"
+            message: "STK push failed"
         });
     }
 };
-
 
 /**
  * CALLBACK FROM PAYHERO
  */
 exports.paymentCallback = (req, res) => {
-
     const data = req.body;
 
-    console.log("Callback received:", data);
+    console.log("PAYHERO CALLBACK:", data);
 
-    const transactionId = data.transaction_id;
+    const transactionId =
+        data.checkoutRequestId ||
+        data.reference ||
+        data.transaction_id;
 
-    if (payments[transactionId]) {
+    if (transactionId && payments[transactionId]) {
         payments[transactionId].status = "paid";
     }
 
-    res.json({ status: "ok" });
+    res.json({ ResultCode: 0, ResultDesc: "OK" });
 };
 
-
 /**
- * CHECK PAYMENT STATUS (ANDROID CALLS THIS)
+ * CHECK STATUS (ANDROID POLLING)
  */
 exports.checkStatus = (req, res) => {
-
     const id = req.params.id;
 
     const payment = payments[id];
@@ -88,8 +90,7 @@ exports.checkStatus = (req, res) => {
     }
 
     res.json({
-        success: true,
-        status: payment.status,
-        plan: payment.plan
+         success: true,
+            transactionId
     });
 };
