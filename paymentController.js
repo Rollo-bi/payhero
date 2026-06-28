@@ -9,21 +9,20 @@ exports.initiatePayment = async (req, res) => {
     const { phone, amount, plan } = req.body;
 
     try {
+
+        // ✅ SINGLE SOURCE OF TRUTH
+        const reference = "SUB-" + Date.now();
+
         const response = await axios.post(
             `${process.env.PAYHERO_BASE_URL}`,
             {
-                
-   
-            amount: Number(amount),
-            phone_number: phone,
-            channel_id: 4643,                       // your STK Push channel
-            provider: "m-pesa",
-            external_reference : "SUB-" + Date.now(), // unique reference
-                transactionId:"SUB-" + Date.now(), 
-            Reference: plan,
-          callback_url: "https://payhero-p673.onrender.com/api/payment/callback"  
-
-              
+                amount: Number(amount),
+                phone_number: phone,
+                channel_id: 4643,
+                provider: "m-pesa",
+                external_reference: reference,
+                Reference: plan,
+                callback_url: "https://payhero-p673.onrender.com/api/payment/callback"
             },
             {
                 headers: {
@@ -35,13 +34,8 @@ exports.initiatePayment = async (req, res) => {
 
         console.log("PAYHERO RESPONSE:", response.data);
 
-        const transactionId =
-            response.data.transaction_id ||
-            response.data.checkoutRequestId ||
-            response.data.reference ||
-            Date.now().toString();
-
-        payments[transactionId] = {
+        // ✅ STORE SAME REFERENCE
+        payments[reference] = {
             phone,
             amount,
             plan,
@@ -50,7 +44,7 @@ exports.initiatePayment = async (req, res) => {
 
         res.json({
             success: true,
-            transactionId
+            transactionId: reference
         });
 
     } catch (error) {
@@ -71,10 +65,7 @@ exports.paymentCallback = (req, res) => {
 
     console.log("🔥 CALLBACK RECEIVED:", JSON.stringify(data, null, 2));
 
-    const reference =
-        data.external_reference ||
-        data.Reference ||
-        data.transaction_id;
+    const reference = data?.response?.ExternalReference;
 
     if (reference && payments[reference]) {
         payments[reference].status = "paid";
@@ -85,6 +76,7 @@ exports.paymentCallback = (req, res) => {
 
     res.json({ success: true });
 };
+
 /**
  * CHECK STATUS
  */
