@@ -50,6 +50,13 @@ exports.initiatePayment = async (req, res) => {
 
     } catch (error) {
         console.log("INIT ERROR:", error.response?.data || error.message);
+        console.log("FULL ERROR:", error.response?.data);
+console.log("STATUS:", error.response?.status);
+console.log("PAYLOAD:", {
+    phone,
+    amount,
+    plan
+});
 
         res.status(500).json({
             success: false,
