@@ -19,6 +19,7 @@ exports.initiatePayment = async (req, res) => {
             channel_id: 4643,                       // your STK Push channel
             provider: "m-pesa",
             external_reference : "SUB-" + Date.now(), // unique reference
+                transactionId:"SUB-" + Date.now(), 
             Reference: plan,
           callback_url: "https://payhero-p673.onrender.com/api/payment/callback"  
 
